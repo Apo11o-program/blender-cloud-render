@@ -1,16 +1,20 @@
 # Blender Rendering with Google Colab
 
-Render Blender projects using Google Colab and save the output directly to Google Drive.
+Render Blender projects using Google Colab and save the output directly to Google Drive. This method allows you to render Blender scenes without using your local machine.
 
 ## Requirements
 
 - Google Account
 - Google Drive
 - Blender project (`.blend` file)
+- Google Colab
+- Stable internet connection
 
 ---
 
-## 1. Download Blender
+## Download Blender
+
+Download Blender 4.3.0 for Linux:
 
 ```python
 !wget https://download.blender.org/release/Blender4.3/blender-4.3.0-linux-x64.tar.xz
@@ -18,18 +22,20 @@ Render Blender projects using Google Colab and save the output directly to Googl
 
 ---
 
-## 2. Mount Google Drive
+## Mount Google Drive
+
+Mount your Google Drive to access `.blend` files and save rendered images.
 
 ```python
 from google.colab import drive
 drive.mount('/content/drive')
 ```
 
-This allows Colab to access your `.blend` files and store rendered images directly in Google Drive.
-
 ---
 
-## 3. Extract Blender
+## Extract Blender
+
+Extract the downloaded archive:
 
 ```python
 !tar xf blender-4.3.0-linux-x64.tar.xz
@@ -37,7 +43,9 @@ This allows Colab to access your `.blend` files and store rendered images direct
 
 ---
 
-## 4. Specify Your Blender Project
+## Specify Your Project File
+
+Replace the path below with the location of your `.blend` file in Google Drive.
 
 ```python
 filename = '/content/drive/MyDrive/YourFolder/YourFile.blend'
@@ -46,12 +54,14 @@ filename = '/content/drive/MyDrive/YourFolder/YourFile.blend'
 Example:
 
 ```python
-filename = '/content/drive/MyDrive/Blender/MyScene.blend'
+filename = '/content/drive/MyDrive/BlenderProjects/House.blend'
 ```
 
 ---
 
-## 5. Start Rendering
+## Start Rendering
+
+Run Blender in background mode and render the animation.
 
 ```python
 !./blender-4.3.0-linux-x64/blender \
@@ -71,56 +81,59 @@ filename = '/content/drive/MyDrive/Blender/MyScene.blend'
 | Parameter | Description |
 |------------|-------------|
 | `-b` | Run Blender in background mode |
+| `-noaudio` | Disable audio |
 | `-E 'CYCLES'` | Use Cycles render engine |
-| `-o` | Output location |
-| `-s` | Start frame |
-| `-e` | End frame |
+| `-o` | Output file path |
+| `-s 1` | Start frame |
+| `-e 720` | End frame |
 | `-a` | Render animation |
 | `-F 'PNG'` | Output image format |
-| `--cycles-device OPTIX` | Use GPU acceleration |
+| `--cycles-device OPTIX` | Use NVIDIA OptiX acceleration |
 
 ---
 
 ## Example
 
-Input file:
-
 ```python
-filename = '/content/drive/MyDrive/Blender/Animation.blend'
+filename = '/content/drive/MyDrive/Projects/Animation.blend'
+
+!./blender-4.3.0-linux-x64/blender \
+-b $filename \
+-noaudio \
+-E 'CYCLES' \
+-o '/content/drive/MyDrive/RenderOutput/Animation_' \
+-s 1 \
+-e 300 \
+-a \
+-F 'PNG' \
+-- --cycles-device OPTIX
 ```
 
-Output directory:
-
-```python
-'/content/drive/MyDrive/RenderedFrames/Animation_'
-```
-
-Frames will be saved as:
+Rendered frames will be saved to:
 
 ```
-Animation_0001.png
-Animation_0002.png
-Animation_0003.png
-...
+MyDrive/RenderOutput/
 ```
 
 ---
 
 ## Notes
 
-- Google Colab sessions are temporary.
-- Rendering speed depends on the GPU assigned by Colab.
-- Ensure enough Google Drive storage is available.
-- For large projects, consider rendering in segments and combining them later.
+- Google Colab GPU availability depends on your account type and current usage limits.
+- If OptiX is unavailable, you may use:
 
----
+```python
+--cycles-device CUDA
+```
 
-## Tested With
+or
 
-- Blender 4.3.0
-- Google Colab
-- Cycles Renderer
-- NVIDIA GPU (OPTIX)
+```python
+--cycles-device CPU
+```
+
+- Ensure that your `.blend` file includes all required textures and assets.
+- Rendering large projects may take several hours.
 
 ---
 
