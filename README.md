@@ -46,7 +46,7 @@ filename = '/content/drive/MyDrive/YourFolder/YourFile.blend'
 ### 5. Run the Render
 
 ```python
-!./blender-4.3.0-linux-x64/blender -b $filename -noaudio -E 'CYCLES' -o '/content/drive/MyDrive/YourOutputFolder/YourProjectFileName_'  -s 1 -e 720 -a -F 'PNG' -- --cycles-device OPTIX
+!./blender-4.3.0-linux-x64/blender -b $filename -noaudio -E 'CYCLES' -o '/content/drive/MyDrive/YourOutputFolder/YourProjectFileName_' -F 'PNG' -s 1 -e 720 -a -- --cycles-device OPTIX
 ```
 
 **Argument reference:**
@@ -57,13 +57,15 @@ filename = '/content/drive/MyDrive/YourFolder/YourFile.blend'
 | `-noaudio` | Disables audio (not needed for rendering) |
 | `-E 'CYCLES'` | Uses the Cycles render engine |
 | `-o '...'` | Output path and filename prefix for the rendered files |
+| `-F 'PNG'` | Output image format |
 | `-s 1` | Start frame |
 | `-e 720` | End frame |
 | `-a` | Renders the full animation range (from start to end frame) |
-| `-F 'PNG'` | Output image format |
 | `--cycles-device OPTIX` | Uses an NVIDIA GPU with OptiX for accelerated rendering (make sure the Colab runtime is set to GPU) |
 
 Note: Before running the render, make sure the Colab runtime is set to GPU via `Runtime > Change runtime type > GPU`.
+
+> **Important on argument order:** Blender executes command line arguments in the order they are written, and `-a` (or `-f`) must always be the last argument. If `-F` (output format) is placed *after* `-a`, the render will already have started using whatever format is saved inside the `.blend` file, and the `-F` flag will have no effect. Always set `-o`, `-F`, `-s`, and `-e` *before* `-a`, as shown above.
 
 ---
 
@@ -78,7 +80,7 @@ filename = '/content/drive/MyDrive/Project Files/My Cool Scene.blend'
 ```
 
 ```python
-!./blender-4.3.0-linux-x64/blender -b "$filename" -noaudio -E 'CYCLES' -o '/content/drive/MyDrive/Output for your blender name/Result_'  -s 1 -e 720 -a -F 'PNG' -- --cycles-device OPTIX
+!./blender-4.3.0-linux-x64/blender -b "$filename" -noaudio -E 'CYCLES' -o '/content/drive/MyDrive/Output for your blender name/Result_' -F 'PNG' -s 1 -e 720 -a -- --cycles-device OPTIX
 ```
 
 Two important points here:
@@ -91,7 +93,7 @@ Without quotes, the shell treats each space as a new argument separator, which c
 
 ## Troubleshooting
 
-- **Error `CUDA/OptiX device not found`**: Make sure the Colab runtime is set to use a GPU (`Runtime > Change runtime type > GPU`).
+- **Error `CUDA/OptiX device not found`**: Make sure the Colab runtime is set to use a GPU (`Runtime > Change runtime type > GPU`). Note that Blender 4.3 requires NVIDIA driver version 495.89 or newer for OptiX; this is rarely an issue on Colab since its runtimes ship with recent drivers, but it is worth knowing if you encounter device errors on other systems.
 - **Error `No such file or directory`**: Double check the `.blend` file path and make sure it is wrapped in quotes if it contains spaces.
 - **Render interrupted due to Colab session timeout**: Use a smaller frame range per session (adjust the `-s` and `-e` values), or consider Colab Pro for longer runtimes.
 - **Output files not appearing in Drive**: Make sure the destination folder in the `-o` path already exists in Google Drive (Blender does not automatically create new folders).
