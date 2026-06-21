@@ -1,139 +1,100 @@
 # Blender Rendering with Google Colab
 
-Render Blender projects using Google Colab and save the output directly to Google Drive. This method allows you to render Blender scenes without using your local machine.
+Render Blender projects using Google Colab and save the output directly to Google Drive.
 
 ## Requirements
 
 - Google Account
 - Google Drive
 - Blender project (`.blend` file)
-- Google Colab
-- Stable internet connection
 
 ---
 
-## Download Blender
+## Usage
 
-Download Blender 4.3.0 for Linux:
+### 1. Download Blender
+
+Download Blender (version 4.3.0) directly into the Colab runtime:
 
 ```python
 !wget https://download.blender.org/release/Blender4.3/blender-4.3.0-linux-x64.tar.xz
 ```
 
----
+### 2. Mount Google Drive
 
-## Mount Google Drive
-
-Mount your Google Drive to access `.blend` files and save rendered images.
+Connect Colab to Google Drive so the `.blend` file and render output can be accessed:
 
 ```python
 from google.colab import drive
 drive.mount('/content/drive')
 ```
 
----
-
-## Extract Blender
-
-Extract the downloaded archive:
+### 3. Extract Blender
 
 ```python
 !tar xf blender-4.3.0-linux-x64.tar.xz
 ```
 
----
+### 4. Set the File Path
 
-## Specify Your Project File
-
-Replace the path below with the location of your `.blend` file in Google Drive.
+Replace the path below with the location of your `.blend` file in Google Drive:
 
 ```python
 filename = '/content/drive/MyDrive/YourFolder/YourFile.blend'
 ```
 
-Example:
+### 5. Run the Render
 
 ```python
-filename = '/content/drive/MyDrive/BlenderProjects/House.blend'
+!./blender-4.3.0-linux-x64/blender -b $filename -noaudio -E 'CYCLES' -o '/content/drive/MyDrive/YourOutputFolder/YourProjectFileName_'  -s 1 -e 720 -a -F 'PNG' -- --cycles-device OPTIX
 ```
 
----
+**Argument reference:**
 
-## Start Rendering
-
-Run Blender in background mode and render the animation.
-
-```python
-!./blender-4.3.0-linux-x64/blender \
--b $filename \
--noaudio \
--E 'CYCLES' \
--o '/content/drive/MyDrive/YourOutputFolder/YourProjectFileName_' \
--s 1 \
--e 720 \
--a \
--F 'PNG' \
--- --cycles-device OPTIX
-```
-
-### Parameters
-
-| Parameter | Description |
-|------------|-------------|
-| `-b` | Run Blender in background mode |
-| `-noaudio` | Disable audio |
-| `-E 'CYCLES'` | Use Cycles render engine |
-| `-o` | Output file path |
+| Argument | Description |
+|---|---|
+| `-b $filename` | Runs Blender in background mode (no GUI) with the specified file |
+| `-noaudio` | Disables audio (not needed for rendering) |
+| `-E 'CYCLES'` | Uses the Cycles render engine |
+| `-o '...'` | Output path and filename prefix for the rendered files |
 | `-s 1` | Start frame |
 | `-e 720` | End frame |
-| `-a` | Render animation |
+| `-a` | Renders the full animation range (from start to end frame) |
 | `-F 'PNG'` | Output image format |
-| `--cycles-device OPTIX` | Use NVIDIA OptiX acceleration |
+| `--cycles-device OPTIX` | Uses an NVIDIA GPU with OptiX for accelerated rendering (make sure the Colab runtime is set to GPU) |
+
+Note: Before running the render, make sure the Colab runtime is set to GPU via `Runtime > Change runtime type > GPU`.
 
 ---
 
-## Example
+## Handling Folder or File Names with Spaces
+
+If your folder or file name contains spaces (for example: `Output for your blender name`), the path must be wrapped in quotes to avoid errors. This applies to both Python variables and command line arguments.
+
+**Example path with spaces:**
 
 ```python
-filename = '/content/drive/MyDrive/Projects/Animation.blend'
-
-!./blender-4.3.0-linux-x64/blender \
--b $filename \
--noaudio \
--E 'CYCLES' \
--o '/content/drive/MyDrive/RenderOutput/Animation_' \
--s 1 \
--e 300 \
--a \
--F 'PNG' \
--- --cycles-device OPTIX
+filename = '/content/drive/MyDrive/Project Files/My Cool Scene.blend'
 ```
 
-Rendered frames will be saved to:
+```python
+!./blender-4.3.0-linux-x64/blender -b "$filename" -noaudio -E 'CYCLES' -o '/content/drive/MyDrive/Output for your blender name/Result_'  -s 1 -e 720 -a -F 'PNG' -- --cycles-device OPTIX
+```
 
-```
-MyDrive/RenderOutput/
-```
+Two important points here:
+- The `$filename` variable is wrapped in double quotes (`"$filename"`) so the shell does not split the path into multiple separate arguments.
+- The output path (`-o`) is still wrapped in single quotes as usual.
+
+Without quotes, the shell treats each space as a new argument separator, which causes errors such as `No such file or directory`.
 
 ---
 
-## Notes
+## Troubleshooting
 
-- Google Colab GPU availability depends on your account type and current usage limits.
-- If OptiX is unavailable, you may use:
-
-```python
---cycles-device CUDA
-```
-
-or
-
-```python
---cycles-device CPU
-```
-
-- Ensure that your `.blend` file includes all required textures and assets.
-- Rendering large projects may take several hours.
+- **Error `CUDA/OptiX device not found`**: Make sure the Colab runtime is set to use a GPU (`Runtime > Change runtime type > GPU`).
+- **Error `No such file or directory`**: Double check the `.blend` file path and make sure it is wrapped in quotes if it contains spaces.
+- **Render interrupted due to Colab session timeout**: Use a smaller frame range per session (adjust the `-s` and `-e` values), or consider Colab Pro for longer runtimes.
+- **Output files not appearing in Drive**: Make sure the destination folder in the `-o` path already exists in Google Drive (Blender does not automatically create new folders).
 
 ---
 
